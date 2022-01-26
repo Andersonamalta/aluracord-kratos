@@ -43,7 +43,7 @@ export default function PaginaInicial() {
     //const username = 'Andersonamalta';
     const [username, setUsername] = React.useState('');
     const roteamento = useRouter();
-
+    const [dados, setDados] = React.useState([]);
 
     return (
         <>
@@ -88,7 +88,7 @@ export default function PaginaInicial() {
                     >
                         <Title tag="h2">Boas vindas de volta!</Title>
                         <Text variant="body3" styleSheet={{ marginBottom: '32px', color: appConfig.theme.colors.primary['100'] }}>
-                            {appConfig.name}
+                            {appConfig.name} {username}
                         </Text>
                         <TextField
                             value={username}
@@ -99,6 +99,12 @@ export default function PaginaInicial() {
                                 // Trocar o valor da variavel
                                 // Através do React e avise quem precisa
                                 setUsername(valor);
+                                
+                                fetch(`https://api.github.com/users/${valor}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                setDados(data)
+                                })
                             }}
                             fullWidth
                             textFieldColors={{
@@ -110,17 +116,19 @@ export default function PaginaInicial() {
                                 },
                             }}
                         />
-                        <Button
-                            type='submit'
-                            label='Entrar'
-                            fullWidth
-                            buttonColors={{
-                                contrastColor: appConfig.theme.colors.neutrals["000"],
-                                mainColor: appConfig.theme.colors.primary['200'],
-                                mainColorLight: appConfig.theme.colors.primary['100'],
-                                mainColorStrong: appConfig.theme.colors.primary['100'],
-                            }}
-                        />
+                        {username.length > 2 && username.length !== null && username.trim() && (
+                            <Button
+                                type='submit'
+                                label='Entrar'
+                                fullWidth
+                                buttonColors={{
+                                    contrastColor: appConfig.theme.colors.neutrals["000"],
+                                    mainColor: appConfig.theme.colors.primary['200'],
+                                    mainColorLight: appConfig.theme.colors.primary['100'],
+                                    mainColorStrong: appConfig.theme.colors.primary['100'],
+                                }}
+                            />
+                        )}
                     </Box>
                     {/* Formulário */}
                     {/* Photo Area */}
@@ -139,8 +147,6 @@ export default function PaginaInicial() {
                             styleSheet={{
                                 borderRadius: '50%',
                                 marginBottom: '16px',
-                                border: '1px solid',
-                                borderColor: appConfig.theme.colors.neutrals['700'],
                             }}
 
                             src = {`${username.length <=2 
@@ -158,9 +164,31 @@ export default function PaginaInicial() {
                                 padding: '3px 10px',
                                 borderRadius: '1000px'
                             }}
+                            
                         >
+                            
                             {username.length <=2 ? "Usuário não encontrado " : `${username}`}
                         </Text>
+
+                        <Text
+                            variant="body4"
+                            styleSheet={{
+                            margin:'5px', borderBottom: 'solid 1px black',color: appConfig.theme.colors.neutrals['999']
+                            }}
+                            >
+                            Followers: {dados.followers}
+                        </Text>
+
+                        <a
+                            target="_blank"
+                            variant="body4"
+                            style={{
+                                border: 'solid 1px black', padding: '0px 5px', borderRadius: '10px', textDecoration: 'none', color: appConfig.theme.colors.neutrals['999'], fontSize: '15px', cursor: 'pointer'
+                            }}
+                            href={dados.url}>
+                            GitHub
+                        </a>
+
                     </Box>
                     {/* Photo Area */}
                 </Box>
