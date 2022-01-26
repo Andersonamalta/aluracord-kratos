@@ -159,7 +159,7 @@ export default function PaginaInicial() {
                                 borderRadius: '1000px'
                             }}
                         >
-                            {username.length <=2 ? "Usuário não encontrado " : `${username}` + (location ? ' - ' + location : '')}
+                            {username.length <=2 ? "Usuário não encontrado " : `${username}`}
                         </Text>
                     </Box>
                     {/* Photo Area */}
