@@ -1,7 +1,7 @@
 import appConfig from '../config.json';
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
-import React from 'react';
-import { useRouter} from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 
 function Title(props) {
@@ -41,9 +41,39 @@ function Title(props) {
 
 export default function PaginaInicial() {
     //const username = 'Andersonamalta';
-    const [username, setUsername] = React.useState('');
+    // Variável para receber a entrada do usuário
+    const [username, setUsername] = React.useState('Andersonamalta');
     const roteamento = useRouter();
-    const [dados, setDados] = React.useState([]);
+
+    // Variável para receber a resposta da API Rest 
+    const [userData, setUserData] = useState({});
+
+    //Precisamos buscar os dados do usuário, toda vez que houver uma atualização no nome do usuário, 
+    //para isso usamos o hook useEffect do React.
+    useEffect(() => {
+        getUserData();
+    }, [username]);
+
+    var gitHubUrl = `https://api.github.com/users/${username}`;
+
+    // Agora para obter a resposta da API de usuários do GitHub, vamos fazer uma requisição GET usando Fetch, 
+    //que será o papel da função getUserData().
+    //getUserData() é uma função assíncrona , na qual fetch(gitHubUrl) faz a solicitação e retorna uma promessa. 
+    //Quando a solicitação for concluída, a promessa será resolvida com o objeto de resposta . 
+    //Esse objeto é basicamente um placeholder genérico para vários formatos de resposta.
+    const getUserData = async () => {
+        const response = await fetch(gitHubUrl);
+        //response.json() é usado para extrair o objeto JSON da resposta, ele retorna uma promessa, daí o await. 
+        const jsonData = await response.json();
+        if (jsonData && jsonData.message != "Not Found") {
+            setUserData(jsonData);
+            console.log(jsonData);
+        } else if (username !== "") {
+            console.log('Username does not exist')
+        } else {
+            setUserData({})
+        }
+    };
 
     return (
         <>
@@ -74,7 +104,7 @@ export default function PaginaInicial() {
                     {/* Formulário */}
                     <Box
                         as="form"
-                        onSubmit = {function (event){
+                        onSubmit={function (event) {
                             event.preventDefault();
                             console.log('Alguém submeteu um form');
                             roteamento.push('/chat');
@@ -99,12 +129,7 @@ export default function PaginaInicial() {
                                 // Trocar o valor da variavel
                                 // Através do React e avise quem precisa
                                 setUsername(valor);
-                                
-                                fetch(`https://api.github.com/users/${valor}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                setDados(data)
-                                })
+
                             }}
                             fullWidth
                             textFieldColors={{
@@ -149,12 +174,11 @@ export default function PaginaInicial() {
                                 marginBottom: '16px',
                             }}
 
-                            src = {`${username.length <=2 
+                            src={`${username.length <= 2
                                 ? 'https://i.ibb.co/Ch4m85T/erro.png'
                                 : `https://github.com/${username}.png`
-                            }`}
-                            
-                            //src={`https://github.com/${username}.png`}
+                                }`}
+
                         />
                         <Text
                             variant="body4"
@@ -164,28 +188,49 @@ export default function PaginaInicial() {
                                 padding: '3px 10px',
                                 borderRadius: '1000px'
                             }}
-                            
+
                         >
-                            
-                            {username.length <=2 ? "Usuário não encontrado " : `${username}`}
+
+                            {username.length <= 2 ? "Usuário não encontrado " : `${userData.name}`}
+
                         </Text>
 
                         <Text
                             variant="body4"
                             styleSheet={{
-                            margin:'5px', borderBottom: 'solid 1px black',color: appConfig.theme.colors.neutrals['999']
+                                color: appConfig.theme.colors.neutrals['200'],
+                                backgroundColor: appConfig.theme.colors.neutrals['900'],
+                                padding: '3px 10px', borderRadius: '1000px', marginTop: '5px', width: '200px',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
                             }}
-                            >
-                            Followers: {dados.followers}
+                        >
+                            Followers: {userData.followers}  -  Following: {userData.following}
+
+                        </Text>
+
+                        <Text
+                            variant="body4"
+                            styleSheet={{
+                                color: appConfig.theme.colors.neutrals['200'],
+                                backgroundColor: appConfig.theme.colors.neutrals['900'],
+                                padding: '3px 10px', borderRadius: '1000px', marginTop: '5px', width: '200px',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            }}
+                        >
+                            {userData.location}
+
                         </Text>
 
                         <a
                             target="_blank"
                             variant="body4"
                             style={{
-                                border: 'solid 1px black', padding: '0px 5px', borderRadius: '10px', textDecoration: 'none', color: appConfig.theme.colors.neutrals['999'], fontSize: '15px', cursor: 'pointer'
+                                border: 'solid 1px black', padding: '0px 5px',
+                                borderRadius: '10px', textDecoration: 'none',
+                                color: appConfig.theme.colors.neutrals['999'],
+                                fontSize: '15px', cursor: 'pointer', marginTop: '10px'
                             }}
-                            href={dados.url}>
+                            href={userData.url}>
                             GitHub
                         </a>
 
