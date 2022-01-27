@@ -230,7 +230,7 @@ export default function PaginaInicial() {
                                 color: appConfig.theme.colors.neutrals['999'],
                                 fontSize: '15px', cursor: 'pointer', marginTop: '10px'
                             }}
-                            href={userData.url}>
+                            href={userData.html_url}>
                             GitHub
                         </a>
 

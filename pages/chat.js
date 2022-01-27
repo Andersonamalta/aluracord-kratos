@@ -1,5 +1,5 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import appConfig from '../config.json';
 
 export default function ChatPage() {
@@ -150,7 +150,7 @@ export default function ChatPage() {
                                 event.preventDefault();
                                 handleNovaMensagem(mensagem);
                             }}
-                           
+
                             label='Enviar'
                             buttonColors={{
                                 contrastColor: appConfig.theme.colors.neutrals["000"],
@@ -195,6 +195,11 @@ function Header() {
 
 function MessageList(props) {
     console.log('MessageList', props);
+    
+    // Deletar mensagem
+    //const handleDeleteMessage = (id) => {
+    //    setMensagens([...mensagens].filter(mensagem => mensagem.id !== id))
+    // }
     return (
         <Box
             tag="ul"
