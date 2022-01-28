@@ -1,6 +1,14 @@
-import { Box, Text, TextField, Image, Button } from '@skynexui/components';
-import React, { useEffect, useState } from 'react';
+import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components';
+import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js';
+
+//Material Ui
+import CircularProgress from '@mui/material/CircularProgress';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMxODI4MywiZXhwIjoxOTU4ODk0MjgzfQ.mQiykNHJBcMyNYqwHwSjGJWKHCS1C5G4qVos2JXkcuI';
+const SUPABASE_URL = 'https://qkzxtdodujiukugjsljd.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
     /* 
@@ -17,55 +25,48 @@ export default function ChatPage() {
 
     // Sua lógica vai aqui
 
+    //Variavel da mensagem a ser digitada e enviada
     const [mensagem, setMensagem] = React.useState('');
+    //Lista de mensagens
     const [listaDeMensagem, setListaDeMensagem] = React.useState([]);
+    const [carregando, setCarregando] = React.useState(true);
 
-    // Variável para receber a resposta da API Rest 
-    const [userData, setUserData] = useState({});
+    //Hook do React para alteração APENAS quando ocorrer um efeito
+    React.useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            //Ordena por ID crescente
+            .order('id', { ascending: false })
+            .then(({ data }) => {
+                setListaDeMensagem(data);
+                setCarregando(false);
+            });
+    }, []);
 
-    // Variável para receber a entrada do usuário
-    const [username, setUsername] = React.useState('Andersonamalta');
-
-    //Precisamos buscar os dados do usuário, toda vez que houver uma atualização no nome do usuário, 
-    //para isso usamos o hook useEffect do React.
-    useEffect(() => {
-        getUserData();
-    }, [username]);
-
-    var gitHubUrl = `https://api.github.com/users/${username}`;
-
-    // Agora para obter a resposta da API de usuários do GitHub, vamos fazer uma requisição GET usando Fetch, 
-    //que será o papel da função getUserData().
-    //getUserData() é uma função assíncrona , na qual fetch(gitHubUrl) faz a solicitação e retorna uma promessa. 
-    //Quando a solicitação for concluída, a promessa será resolvida com o objeto de resposta . 
-    //Esse objeto é basicamente um placeholder genérico para vários formatos de resposta.
-    const getUserData = async () => {
-        const response = await fetch(gitHubUrl);
-        //response.json() é usado para extrair o objeto JSON da resposta, ele retorna uma promessa, daí o await. 
-        const jsonData = await response.json();
-        if (jsonData && jsonData.message != "Not Found") {
-            setUserData(jsonData);
-            console.log(jsonData);
-        } else if (username !== "") {
-            console.log('Username does not exist')
-        } else {
-            setUserData({})
-        }
-    };
-
+    //Novas mensagens enviadas, com chamada no onKeyPress
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: listaDeMensagem.length + 1,
-            de: `${userData.login}`,
+            //id: listaDeMensagem.length + 1,
+            de: `Andersonamalta`,
             texto: novaMensagem,
-        }
-        setListaDeMensagem([
-            mensagem,
-            ...listaDeMensagem,
-        ]);
+        };
+
+        //Realiza o POST no Supabase
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                mensagem
+            ])
+            .then(({ data }) => {
+                setListaDeMensagem([
+                    //Pega tudo da lista já criada
+                    data[0],
+                    ...listaDeMensagem,
+                ]);
+            });
         setMensagem('');
     }
-
 
     // ./Sua lógica vai aqui
 
@@ -75,7 +76,6 @@ export default function ChatPage() {
         <Box
             styleSheet={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: appConfig.theme.colors.neutrals['000'],
                 backgroundImage: 'url(/background-god-of-war.jpeg)',
                 backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
                 color: appConfig.theme.colors.neutrals['000']
@@ -93,6 +93,7 @@ export default function ChatPage() {
                     maxWidth: '95%',
                     maxHeight: '95vh',
                     padding: '32px',
+                    opacity: '90%'
                 }}
             >
                 <Header />
@@ -109,7 +110,7 @@ export default function ChatPage() {
                     }}
                 >
 
-                    <MessageList mensagens={listaDeMensagem} />
+                    <MessageList mensagens={listaDeMensagem} carregando={carregando} />
 
                     <Box
                         as="form"
@@ -194,12 +195,19 @@ function Header() {
 }
 
 function MessageList(props) {
+
     console.log('MessageList', props);
-    
-    // Deletar mensagem
-    //const handleDeleteMessage = (id) => {
-    //    setMensagens([...mensagens].filter(mensagem => mensagem.id !== id))
-    // }
+
+    function removerMensagem(id) {
+        //console.log(id) ta saindo o id que eu clico
+        const mensagemRemovida = props.mensagens.filter((mensagem) => id !== mensagem.id);
+        //console.log(mensagemRemovida) ta saindo o novo array com valores excluidos
+        supabaseClient
+            .from('mensagens')
+            .delete()
+            .match({ id: id })
+            .then(() => props.setListaDeMensagem(mensagemRemovida))
+    }
     return (
         <Box
             tag="ul"
@@ -212,6 +220,22 @@ function MessageList(props) {
                 marginBottom: '16px',
             }}
         >
+
+            {props.carregando && (
+                <Box
+                    styleSheet={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', color: 'red' }}>
+                        <LoadingKratos />
+                    </Box>
+                </Box>
+            )}
+
             {props.mensagens.map((mensagem) => {
                 return (
                     <Text
@@ -222,10 +246,11 @@ function MessageList(props) {
                             padding: '6px',
                             marginBottom: '12px',
                             hover: {
-                                backgroundColor: appConfig.theme.colors.neutrals['700'],
+                                backgroundColor: appConfig.theme.colors.neutrals['800'],
                             }
                         }}
                     >
+
                         <Box
                             styleSheet={{
                                 marginBottom: '8px',
@@ -238,8 +263,13 @@ function MessageList(props) {
                                     borderRadius: '50%',
                                     display: 'inline-block',
                                     marginRight: '8px',
+                                    hover: {
+                                        transform: 'scale(3.5)',
+                                        marginLeft: '25px',
+                                        marginRight: '35px',
+                                    }
                                 }}
-                                src={`https://github.com/vanessametonini.png`}
+                                src={`https://github.com/${mensagem.de}.png`}
                             />
                             <Text tag="strong">
                                 {mensagem.de}
@@ -254,6 +284,20 @@ function MessageList(props) {
                             >
                                 {(new Date().toLocaleDateString())}
                             </Text>
+
+                            <Button
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    removerMensagem(mensagem.id);
+                                }}
+                                buttonColors={{
+                                    contrastColor: '#FDFDFD',
+                                    mainColor: 'rgba(0, 0, 0, 0.0)',
+                                }}
+                                colorVariant="negative"
+                                iconName="FaRegTrashAlt"
+                            />
+
                         </Box>
                         {mensagem.texto}
                     </Text>
@@ -261,4 +305,24 @@ function MessageList(props) {
             })}
         </Box>
     )
+}
+
+function LoadingKratos() {
+    return (
+        <Box styleSheet={{
+            width: '100%',
+            height: '500px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+        }}>
+            <Image src="/loading.png" styleSheet={{
+                animation: 'rotate-center 2s linear infinite both'
+            }} />
+
+            <CircularProgress />
+
+        </Box>
+    );
 }
