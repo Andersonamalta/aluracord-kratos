@@ -2,13 +2,25 @@ import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components'
 import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker'
 
 //Material Ui
 import CircularProgress from '@mui/material/CircularProgress';
+import { height } from '@mui/system';
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMxODI4MywiZXhwIjoxOTU4ODk0MjgzfQ.mQiykNHJBcMyNYqwHwSjGJWKHCS1C5G4qVos2JXkcuI';
 const SUPABASE_URL = 'https://qkzxtdodujiukugjsljd.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+    return supabaseClient
+        .from('mensagens')
+        .on('INSERT', (respostaLive) => {
+            adicionaMensagem(respostaLive.new);
+        })
+        .subscribe();
+}
 
 export default function ChatPage() {
     /* 
@@ -30,6 +42,8 @@ export default function ChatPage() {
     //Lista de mensagens
     const [listaDeMensagem, setListaDeMensagem] = React.useState([]);
     const [carregando, setCarregando] = React.useState(true);
+    const roteamento = useRouter();
+    const usuarioLogado = roteamento.query.username;
 
     //Hook do React para alteração APENAS quando ocorrer um efeito
     React.useEffect(() => {
@@ -42,13 +56,23 @@ export default function ChatPage() {
                 setListaDeMensagem(data);
                 setCarregando(false);
             });
+        escutaMensagensEmTempoReal((novaMensagem) => {
+            setListaDeMensagem((valorAtualDaLista) => {
+                return [
+                    //Pega tudo da lista já criada
+                    novaMensagem,
+                    ...valorAtualDaLista,
+                ]
+            });
+        });
+
     }, []);
 
     //Novas mensagens enviadas, com chamada no onKeyPress
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
             //id: listaDeMensagem.length + 1,
-            de: `Andersonamalta`,
+            de: usuarioLogado,
             texto: novaMensagem,
         };
 
@@ -59,11 +83,7 @@ export default function ChatPage() {
                 mensagem
             ])
             .then(({ data }) => {
-                setListaDeMensagem([
-                    //Pega tudo da lista já criada
-                    data[0],
-                    ...listaDeMensagem,
-                ]);
+
             });
         setMensagem('');
     }
@@ -145,6 +165,13 @@ export default function ChatPage() {
                                 color: appConfig.theme.colors.neutrals['200'],
                             }}
                         />
+
+                        <ButtonSendSticker
+                            onStickerClick={(sticker) => {
+                                handleNovaMensagem(':sticker:' + sticker);
+                            }}
+                        />
+
                         <Button
                             value={mensagem}
                             onClick={(event) => {
@@ -198,16 +225,16 @@ function MessageList(props) {
 
     console.log('MessageList', props);
 
-    function removerMensagem(id) {
-        //console.log(id) ta saindo o id que eu clico
-        const mensagemRemovida = props.mensagens.filter((mensagem) => id !== mensagem.id);
-        //console.log(mensagemRemovida) ta saindo o novo array com valores excluidos
-        supabaseClient
-            .from('mensagens')
-            .delete()
-            .match({ id: id })
-            .then(() => props.setListaDeMensagem(mensagemRemovida))
-    }
+    //function removerMensagem(id) {
+    //console.log(id) ta saindo o id que eu clico
+    //  const mensagemRemovida = props.mensagens.filter((mensagem) => id !== mensagem.id);
+    //console.log(mensagemRemovida) ta saindo o novo array com valores excluidos
+    //supabaseClient
+    //    .from('mensagens')
+    //    .delete()
+    //    .match({ id: id })
+    //    .then(() => props.setListaDeMensagem(mensagemRemovida))
+    //}
     return (
         <Box
             tag="ul"
@@ -286,10 +313,10 @@ function MessageList(props) {
                             </Text>
 
                             <Button
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    removerMensagem(mensagem.id);
-                                }}
+                                // onClick={(event) => {
+                                //    event.preventDefault();
+                                //    removerMensagem(mensagem.id);
+                                //}}
                                 buttonColors={{
                                     contrastColor: '#FDFDFD',
                                     mainColor: 'rgba(0, 0, 0, 0.0)',
@@ -299,7 +326,17 @@ function MessageList(props) {
                             />
 
                         </Box>
-                        {mensagem.texto}
+                        {mensagem.texto.startsWith(':sticker:')
+                            ? (
+                                <Image src={mensagem.texto.replace(':sticker:', '')}
+                                    styleSheet={{
+                                        width: '100px',
+                                    }}
+                                />
+                            )
+                            : (
+                                mensagem.texto
+                            )}
                     </Text>
                 );
             })}
