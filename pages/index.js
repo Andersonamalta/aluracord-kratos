@@ -14,8 +14,9 @@ function Title(props) {
             <style jsx>{`
                 ${Tag}{
                     color: ${appConfig.theme.colors.primary['050']};
-                    font-size: 24px;
+                    font-size: 20px;
                     font-weight: 600;
+                    margin-top: 50px;
                 }
             `}
             </style>
@@ -42,7 +43,7 @@ function Title(props) {
 export default function PaginaInicial() {
     //const username = 'Andersonamalta';
     // Variável para receber a entrada do usuário
-    const [username, setUsername] = React.useState('Andersonamalta');
+    const [username, setUsername] = React.useState('');
     const roteamento = useRouter();
 
     // Variável para receber a resposta da API Rest 
@@ -79,10 +80,14 @@ export default function PaginaInicial() {
         <>
             <Box
                 styleSheet={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'rigth',
                     backgroundColor: appConfig.theme.colors.neutrals['000'],
                     backgroundImage: 'url(/background-god-of-war.jpeg)',
-                    backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: 'cover',
+                    backgroundBlendMode: 'multiply',
                 }}
             >
                 <Box
@@ -92,13 +97,22 @@ export default function PaginaInicial() {
                         justifyContent: 'space-between',
                         flexDirection: {
                             xs: 'column',
-                            sm: 'row',
+                            sm: 'columm',
                         },
-                        width: '100%', maxWidth: '700px',
-                        borderRadius: '5px', padding: '32px', margin: '16px',
+                        width: '100%',
+                        maxWidth: '400px',
+                        height: {
+                            xs: '',
+                            sm: '100%'
+                        },
+                        padding: '32px',
+                        margin: {
+                            xs: '16px',
+                            sm: '100px'
+                        },
                         boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
-                        backgroundColor: appConfig.theme.colors.neutrals['000'],
-                        backgroundImage: 'url(/sangue.jpeg)'
+                        //backgroundColor: appConfig.theme.colors.neutrals['000'],
+                        backgroundImage: 'url(/sangue.jpeg)',
                     }}
                 >
                     {/* Formulário */}
@@ -106,19 +120,27 @@ export default function PaginaInicial() {
                         as="form"
                         onSubmit={function (event) {
                             event.preventDefault();
-                            console.log('Alguém submeteu um form');
                             roteamento.push(`/chat?username=${username}`);
                             //window.location.href = '/chat';
 
                         }}
                         styleSheet={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                            width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: { xs: '100%', sm: '85%' },
+                            textAlign: 'center',
+                            marginBottom: '32px',
                         }}
                     >
-                        <Title tag="h2">Boas vindas de volta!</Title>
-                        <Text variant="body3" styleSheet={{ marginBottom: '32px', color: appConfig.theme.colors.primary['100'] }}>
-                            {appConfig.name} {username}
+                        <Title tag="h2">Saudações guerreiro nordico!</Title>
+                        <Text variant="body3"
+                            styleSheet={{
+                                marginBottom: '32px',
+                                color: appConfig.theme.colors.primary['100']
+                            }}>
+                            {appConfig.name} 🛡️{username}⚔️
                         </Text>
                         <TextField
                             value={username}
@@ -131,6 +153,7 @@ export default function PaginaInicial() {
                                 setUsername(valor);
 
                             }}
+                            placeholder='Digite seu usuário no GitHub'
                             fullWidth
                             textFieldColors={{
                                 neutral: {
@@ -175,7 +198,7 @@ export default function PaginaInicial() {
                             }}
 
                             src={`${username.length <= 2
-                                ? 'https://i.ibb.co/Ch4m85T/erro.png'
+                                ? '/logo-git.png'
                                 : `https://github.com/${username}.png`
                                 }`}
 
@@ -195,44 +218,78 @@ export default function PaginaInicial() {
 
                         </Text>
 
-                        <Text
-                            variant="body4"
-                            styleSheet={{
-                                color: appConfig.theme.colors.neutrals['200'],
-                                backgroundColor: appConfig.theme.colors.neutrals['900'],
-                                padding: '3px 10px', borderRadius: '1000px', marginTop: '5px', width: '200px',
-                                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            }}
-                        >
-                            Followers: {userData.followers}  -  Following: {userData.following}
+                        {username.length <= 2
 
-                        </Text>
+                            ? (
+                                " "
+                            )
 
-                        <Text
-                            variant="body4"
-                            styleSheet={{
-                                color: appConfig.theme.colors.neutrals['200'],
-                                backgroundColor: appConfig.theme.colors.neutrals['900'],
-                                padding: '3px 10px', borderRadius: '1000px', marginTop: '5px', width: '200px',
-                                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            }}
-                        >
-                            {userData.location}
+                            : (
 
-                        </Text>
+                                <Text
+                                    variant="body4"
+                                    styleSheet={{
+                                        color: appConfig.theme.colors.neutrals['200'],
+                                        backgroundColor: appConfig.theme.colors.neutrals['900'],
+                                        padding: '3px 10px', borderRadius: '1000px', marginTop: '5px', width: '200px',
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                    }}
+                                >
+                                    Seguidores: {userData.followers}  -  Repositórios: {userData.public_repos}
 
-                        <a
-                            target="_blank"
-                            variant="body4"
-                            style={{
-                                border: 'solid 1px black', padding: '0px 5px',
-                                borderRadius: '10px', textDecoration: 'none',
-                                color: appConfig.theme.colors.neutrals['999'],
-                                fontSize: '15px', cursor: 'pointer', marginTop: '10px'
-                            }}
-                            href={userData.html_url}>
-                            GitHub
-                        </a>
+                                </Text>
+
+                            )}
+
+                        {username.length <= 2
+
+                            ? (
+                                " "
+                            )
+
+                            : (
+
+                                <Text
+                                    variant="body4"
+                                    styleSheet={{
+                                        color: appConfig.theme.colors.neutrals['200'],
+                                        backgroundColor: appConfig.theme.colors.neutrals['900'],
+                                        padding: '3px 10px', borderRadius: '1000px', marginTop: '5px', width: '200px',
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                    }}
+                                >
+                                    {userData.location}
+
+                                </Text>
+
+                            )}
+
+                        {username.length <= 2
+
+                            ? (
+                                " "
+                            )
+
+                            : (
+
+                                <a
+                                    target="_blank"
+                                    variant="body4"
+                                    style={{
+                                        border: 'solid 1px black', 
+                                        padding: '0px 5px',
+                                        borderRadius: '10px', 
+                                        textDecoration: 'none',
+                                        color: appConfig.theme.colors.neutrals['999'],
+                                        fontSize: '15px', 
+                                        cursor: 'pointer', 
+                                        marginTop: '10px'
+                                    }}
+                                    href={userData.html_url}>
+                                    GitHub
+                                </a>
+
+                            )}
 
                     </Box>
                     {/* Photo Area */}

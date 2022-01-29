@@ -7,7 +7,7 @@ import { ButtonSendSticker } from '../src/components/ButtonSendSticker'
 
 //Material Ui
 import CircularProgress from '@mui/material/CircularProgress';
-import { height } from '@mui/system';
+import { borderRadius, fontSize, height } from '@mui/system';
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMxODI4MywiZXhwIjoxOTU4ODk0MjgzfQ.mQiykNHJBcMyNYqwHwSjGJWKHCS1C5G4qVos2JXkcuI';
 const SUPABASE_URL = 'https://qkzxtdodujiukugjsljd.supabase.co';
@@ -171,24 +171,21 @@ export default function ChatPage() {
                                 handleNovaMensagem(':sticker:' + sticker);
                             }}
                         />
-
                         <Button
                             value={mensagem}
                             onClick={(event) => {
                                 event.preventDefault();
                                 handleNovaMensagem(mensagem);
                             }}
-
-                            label='Enviar'
-                            buttonColors={{
-                                contrastColor: appConfig.theme.colors.neutrals["000"],
-                                mainColor: appConfig.theme.colors.primary['200'],
-                                mainColorLight: appConfig.theme.colors.primary['100'],
-                                mainColorStrong: appConfig.theme.colors.primary['100'],
-                            }}
+                            colorVariant="negative"
+                            iconName="paperPlane"
+                            rounded="none"
+                            variant="primary"
                             styleSheet={{
                                 padding: '12px',
-                                marginBottom: '9px'
+                                marginBottom: '9px',
+                                fontSize: '20px',
+                                
                             }}
                         />
                     </Box>
